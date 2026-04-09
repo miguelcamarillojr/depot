@@ -177,7 +177,7 @@ const translations={
     footer:'Seleccionado por alguien con demasiadas pestañas abiertas.',
     preloader:'Donde viven los mejores recursos de diseño.',
     empty:'No se encontraron recursos.',
-    filters:{all:'Todo','ui-ux':'UI / UX',typography:'Tipografía',color:'Color',blogs:'Blogs',campaign:'Inspo de Campaña','visual-inspo':'Inspo Visual',stock:'Recursos',icons:'Iconos',mockups:'Mockups',ai:'AI',extensions:'Extensiones',email:'Inspo de Email',presentation:'Presentación',utilities:'Utilidades'},
+    filters:{all:'Todo',new:'Nuevo',fav:'Fav','ui-ux':'UI / UX',typography:'Tipografía',color:'Color',blogs:'Blogs',campaign:'Inspo de Campaña','visual-inspo':'Inspo Visual',stock:'Recursos',icons:'Iconos',mockups:'Mockups',ai:'AI',extensions:'Extensiones',email:'Inspo de Email',presentation:'Presentación',utilities:'Utilidades'},
     cats:{'ui-ux':'UI / UX',typography:'Tipografía',color:'Color',blogs:'Blogs',campaign:'Inspo de Campaña','visual-inspo':'Inspo Visual',stock:'Recursos',icons:'Iconos',mockups:'Mockups',ai:'AI',extensions:'Extensiones',email:'Inspo de Email',presentation:'Presentación',utilities:'Utilidades'},
   }
 };
@@ -332,6 +332,7 @@ function setLang(lang,btn){
 }
 
 function updateFilterCounts(){
+  const t=translations[currentLang];
   document.querySelectorAll('.filter-btn').forEach(btn=>{
     const cat=btn.dataset.cat;
     let count=0;
@@ -339,8 +340,7 @@ function updateFilterCounts(){
     else if(cat==='new') count=resources.filter(r=>r.isNew).length;
     else if(cat==='fav') count=resources.filter(r=>r.isFav).length;
     else count=resources.filter(r=>r.cat.includes(cat)).length;
-    const label=btn.dataset.label||btn.textContent.replace(/\s*\d+$/,'').trim();
-    btn.dataset.label=label;
+    const label=cat==='new'?(currentLang==='es'?'Nuevo':'New'):cat==='fav'?'Fav':(t.filters[cat]||cat);
     btn.innerHTML=`${label} <span class="filter-count">${count}</span>`;
   });
 }

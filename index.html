@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEPOT.</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Mono',monospace;background:#c0c0bc;min-height:100vh;color:#1a1a1a;display:flex;flex-direction:column}
+#page-wrap{flex:1;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{background:#c0c0bc;padding:2.5rem 2rem 0}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem}
+.site-title{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#1a1a1a;line-height:1}
+.site-sub{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#888;margin-top:8px}
+.header-top-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.live-clock{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#888;white-space:nowrap}
+.count-badge{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#888;white-space:nowrap}
+
+/* SEARCH */
+.search-row{padding-bottom:1.5rem;display:flex;gap:8px;align-items:center}
+.search-input{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:10px 16px;border:1px solid rgba(0,0,0,0.15);border-radius:2px;background:rgba(255,255,255,0.3);color:#1a1a1a;outline:none;flex:1}
+.search-input::placeholder{color:#aaa}
+.search-input:focus{background:rgba(255,255,255,0.5);border-color:rgba(0,0,0,0.3)}
+.lucky-btn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:10px 16px;border:1px solid rgba(0,0,0,0.18);border-radius:2px;background:transparent;color:#777;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.lucky-btn:hover{background:#1a1a1a;color:#c0c0bc;border-color:#1a1a1a}
+
+/* FILTER BAR */
+.filter-bar{background:#c0c0bc;padding:0 2rem 1.5rem;display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border:1px solid rgba(0,0,0,0.18);border-radius:2px;background:transparent;color:#777;cursor:pointer;transition:all .15s;white-space:nowrap}
+.filter-btn:hover{background:rgba(255,255,255,0.35);color:#1a1a1a;border-color:rgba(0,0,0,0.3)}
+.filter-btn.active{background:#1a1a1a;border-color:#1a1a1a;color:#c0c0bc}
+
+/* GRID */
+.grid-wrap{background:#c0c0bc;padding:3px;flex:1}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:400px){.grid{grid-template-columns:1fr}}
+
+/* TILE */
+.tile{
+  background:#f0f0ec;
+  padding:1.5rem 1.5rem 1.75rem;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-height:220px;
+  position:relative;
+  transition:background .15s;
+  color:#1a1a1a;
+  border-radius:10px;
+}
+.tile:hover{background:#ffffff}
+.tile:hover .tile-num{color:#bbb}
+.tile:hover .tile-name{color:#1a1a1a}
+.tile:hover .tile-desc{color:#999}
+.tile:hover .tile-category{color:#999;border-color:rgba(0,0,0,0.15)}
+
+/* TILE TOP */
+.tile-top{display:flex;align-items:center;justify-content:space-between}
+.tile-top-left{display:flex;align-items:center;gap:8px}
+.tile-num{font-size:10px;letter-spacing:.08em;color:#bbb;font-weight:400}
+.tile-logo{width:28px;height:28px;object-fit:contain;flex-shrink:0;border-radius:4px}
+.tile-logo-fallback{width:28px;height:28px;display:none;align-items:center;justify-content:center;font-size:9px;color:#ccc;flex-shrink:0}
+
+/* ARROW */
+.tile-arrow{
+  position:absolute;
+  top:1rem;right:1rem;
+  width:24px;height:24px;
+  border-radius:50%;
+  background:transparent;
+  border:1px solid #bbb;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;
+  transition:opacity .15s,transform .15s;
+  transform:translate(-3px,3px);
+  flex-shrink:0;
+}
+.tile-arrow svg{width:9px;height:9px;stroke:#bbb;fill:none;stroke-width:1.2;stroke-linecap:square;stroke-linejoin:miter;display:block}
+.tile:hover .tile-arrow{opacity:1;transform:translate(0,0)}
+
+/* TILE BOTTOM */
+.tile-bottom{display:flex;flex-direction:column;gap:8px}
+.tile-category{
+  font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  color:#999;
+  display:inline-block;
+  border:1px solid rgba(0,0,0,0.15);
+  padding:3px 7px;
+  border-radius:2px;
+  align-self:flex-start;
+}
+.tile-name{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:#1a1a1a;line-height:1.35}
+.tile-desc{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#999;line-height:1.8}
+
+/* NEW BADGE */
+.tile-new{
+  font-size:7px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  background:#1a1a1a;color:#f0f0ec;
+  padding:2px 5px;border-radius:2px;
+  margin-left:6px;vertical-align:middle;
+  display:inline-block;position:relative;top:-1px;
+}
+
+/* FAV BADGE */
+.tile-fav{
+  display:inline-flex;align-items:center;justify-content:center;
+  position:relative;width:26px;height:26px;
+  margin-left:6px;vertical-align:middle;top:-1px;
+  flex-shrink:0;
+}
+
+.tile.hidden{display:none}
+.empty{grid-column:1/-1;text-align:center;padding:4rem;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#aaa;background:#f0f0ec;border-radius:10px}
+
+/* PRELOADER */
+#preloader{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:#1a1a1a;
+  display:flex;align-items:center;justify-content:center;
+  gap:2rem;
+  z-index:9999;
+  transition:opacity .6s ease, visibility .6s ease;
+}
+#preloader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.preloader-title{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#f0f0ec}
+.preloader-divider{width:1px;height:18px;background:rgba(255,255,255,0.2);flex-shrink:0}
+.preloader-sub{font-family:'DM Mono',monospace;font-size:9px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:#555}
+
+/* FOOTER */
+.footer{background:#c0c0bc;padding:1.25rem 2rem;display:flex;justify-content:space-between;align-items:center}
+.footer span{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#888}
+@media(max-width:700px){.footer{flex-direction:column;gap:6px;text-align:center}}
+</style>
+</head>
+<body>
+
+<div id="preloader">
+  <span class="preloader-title">DEPOT.</span>
+  <div class="preloader-divider"></div>
+  <span class="preloader-sub">Where good design resources live.</span>
+</div>
+
+<div id="page-wrap">
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="site-title">DEPOT.</div>
+      <div class="site-sub">Where good design resources live.</div>
+    </div>
+    <div class="header-top-right">
+      <span class="live-clock" id="clock"></span>
+      <span class="count-badge" id="count"></span>
+    </div>
+  </div>
+  <div class="search-row">
+    <input class="search-input" type="text" id="search" placeholder="Search resources..." oninput="filterTiles()">
+    <button class="lucky-btn" onclick="openRandom()">Feeling Lucky</button>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" onclick="setFilter('ui-ux',this)">UI / UX</button>
+  <button class="filter-btn" onclick="setFilter('typography',this)">Typography</button>
+  <button class="filter-btn" onclick="setFilter('color',this)">Color</button>
+  <button class="filter-btn" onclick="setFilter('blogs',this)">Blogs</button>
+  <button class="filter-btn" onclick="setFilter('campaign',this)">Campaign Inspo</button>
+  <button class="filter-btn" onclick="setFilter('visual-inspo',this)">Visual Inspo</button>
+  <button class="filter-btn" onclick="setFilter('stock',this)">Stock & Assets</button>
+  <button class="filter-btn" onclick="setFilter('icons',this)">Icons</button>
+  <button class="filter-btn" onclick="setFilter('mockups',this)">Mockups</button>
+  <button class="filter-btn" onclick="setFilter('ai',this)">AI</button>
+  <button class="filter-btn" onclick="setFilter('extensions',this)">Extensions</button>
+  <button class="filter-btn" onclick="setFilter('email',this)">Email Inspo</button>
+  <button class="filter-btn" onclick="setFilter('presentation',this)">Presentation</button>
+  <button class="filter-btn" onclick="setFilter('utilities',this)">Utilities</button>
+</div>
+
+<div class="grid-wrap">
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="footer">
+  <span>Curated by someone with too many tabs open.</span>
+  <span>@miguelcamarillojr</span>
+</div>
+</div>
+
+<script>
+const resources=[
+  // UI / UX
+  {name:"Land Book",desc:"Landing page design gallery",url:"https://land-book.com",cat:["ui-ux"],domain:"land-book.com"},
+  {name:"Awwwards",desc:"Website awards for web designers, devs & agencies",url:"https://www.awwwards.com/",cat:["ui-ux"],domain:"awwwards.com",isFav:true},
+  {name:"Site Inspire",desc:"Curated web design inspiration gallery",url:"https://www.siteinspire.com/",cat:["ui-ux"],domain:"siteinspire.com"},
+  {name:"Godly",desc:"The finest web design inspiration on the internet",url:"https://godly.website/",cat:["ui-ux"],domain:"godly.website",isNew:true},
+  {name:"Mobbin",desc:"Real app UI screenshot library",url:"https://mobbin.com/",cat:["ui-ux"],domain:"mobbin.com"},
+  {name:"CTA Gallery",desc:"Curated gallery of call-to-actions",url:"https://www.cta.gallery/",cat:["ui-ux"],domain:"cta.gallery",isNew:true},
+  {name:"Commerce Cream",desc:"Ecommerce experiences powered by Shopify",url:"https://commercecream.com/",cat:["ui-ux"],domain:"commercecream.com"},
+  {name:"Dribbble",desc:"Visual design shots & portfolios",url:"https://dribbble.com",cat:["ui-ux","visual-inspo"],domain:"dribbble.com"},
+  {name:"Behance",desc:"Full project case studies",url:"https://www.behance.net",cat:["ui-ux","visual-inspo"],domain:"behance.net"},
+
+  // TYPOGRAPHY
+  {name:"Typewolf",desc:"Font recommendations & pairings in the wild",url:"https://www.typewolf.com",cat:["typography"],domain:"typewolf.com"},
+  {name:"Fonts In Use",desc:"Independent typography archive",url:"https://fontsinuse.com",cat:["typography"],domain:"fontsinuse.com",isFav:true},
+  {name:"What The Font",desc:"Identify any font from a screenshot",url:"https://www.myfonts.com/pages/whatthefont/",cat:["typography"],domain:"myfonts.com"},
+  {name:"Typescale",desc:"Generates font sizes, spacing & line height systems",url:"https://typescale.com/",cat:["typography"],domain:"typescale.com",isNew:true},
+  {name:"Pangram Pangram",desc:"Premium independent type foundry",url:"https://pangrampangram.com/",cat:["typography"],domain:"pangrampangram.com"},
+  {name:"Grilli Type",desc:"Premium independent type foundry",url:"https://www.grillitype.com/",cat:["typography"],domain:"grillitype.com"},
+  {name:"Klim Type",desc:"Premium independent type foundry",url:"https://klim.co.nz/",cat:["typography"],domain:"klim.co.nz"},
+  {name:"Commercial Type",desc:"Premium independent type foundry",url:"https://commercialtype.com/",cat:["typography"],domain:"commercialtype.com"},
+  {name:"Adobe Fonts",desc:"Extensive font library included with Adobe CC",url:"https://fonts.adobe.com/",cat:["typography"],domain:"fonts.adobe.com"},
+  {name:"Google Fonts",desc:"Free open-source font library",url:"https://fonts.google.com",cat:["typography"],domain:"fonts.google.com"},
+  {name:"Fonts Ninja",desc:"Giant searchable font index",url:"https://fonts.ninja/",cat:["typography"],domain:"fonts.ninja"},
+  {name:"Displaay",desc:"Premium independent type foundry",url:"https://displaay.net/",cat:["typography"],domain:"displaay.net"},
+  {name:"Typ.io",desc:"Fonts in use on real webpages",url:"https://typ.io/",cat:["typography"],domain:"typ.io"},
+  {name:"Fontshare",desc:"Free high-quality fonts from Indian Type Foundry",url:"https://www.fontshare.com/",cat:["typography"],domain:"fontshare.com"},
+
+  // COLOR
+  {name:"Coolors",desc:"Fast palette generator",url:"https://coolors.co",cat:["color"],domain:"coolors.co"},
+  {name:"Happy Hues",desc:"Palettes in context on real UI",url:"https://www.happyhues.co",cat:["color"],domain:"happyhues.co"},
+  {name:"Color Hunt",desc:"Curated 4-color palettes",url:"https://colorhunt.co",cat:["color"],domain:"colorhunt.co"},
+  {name:"Adobe Color",desc:"Generate and explore palettes with a color wheel",url:"https://color.adobe.com/create/color-wheel",cat:["color"],domain:"color.adobe.com"},
+  {name:"Pantone",desc:"The global authority on color standards",url:"https://www.pantone.com/",cat:["color"],domain:"pantone.com"},
+
+  // BLOGS
+  {name:"Brand New",desc:"Corporate identity reviews & commentary",url:"https://www.underconsideration.com/brandnew/",cat:["blogs"],domain:"underconsideration.com",isFav:true},
+  {name:"Creative Boom",desc:"Inspiration for creative professionals",url:"https://www.creativeboom.com",cat:["blogs"],domain:"creativeboom.com"},
+  {name:"Creative Bloq",desc:"Daily inspiration and resources for creatives",url:"https://www.creativebloq.com/",cat:["blogs"],domain:"creativebloq.com",isFav:true},
+  {name:"It's Nice That",desc:"Cross-discipline creative inspiration",url:"https://www.itsnicethat.com",cat:["blogs"],domain:"itsnicethat.com"},
+  {name:"BP&O",desc:"Brand identity and graphic design blog",url:"https://bpando.org/",cat:["blogs"],domain:"bpando.org"},
+  {name:"Medium",desc:"Publishing platform for design, tech & business",url:"https://medium.com/",cat:["blogs"],domain:"medium.com"},
+  {name:"Minimalissimo",desc:"The best in minimalist design and culture",url:"https://minimalissimo.com/",cat:["blogs"],domain:"minimalissimo.com",isNew:true},
+  {name:"Hubspot Blog",desc:"HubSpot's marketing and design blog",url:"https://blog.hubspot.com/",cat:["blogs"],domain:"hubspot.com"},
+  {name:"The Drum",desc:"News and events for marketing and media industries",url:"https://www.thedrum.com/",cat:["blogs"],domain:"thedrum.com"},
+
+  // CAMPAIGN INSPO
+  {name:"Ads of the World",desc:"Global advertising campaign showcase",url:"https://www.adsoftheworld.com/",cat:["campaign"],domain:"adsoftheworld.com"},
+  {name:"Best Ads on TV",desc:"Curated global video and ad campaigns",url:"https://www.bestadsontv.com/",cat:["campaign"],domain:"bestadsontv.com"},
+  {name:"Campaign Brief",desc:"Campaign case studies with strategy insights",url:"https://campaignbrief.com/",cat:["campaign"],domain:"campaignbrief.com"},
+  {name:"Cannes Lions",desc:"Award-winning global advertising campaigns",url:"https://www.canneslions.com/awards/winners-spotlight",cat:["campaign"],domain:"canneslions.com"},
+  {name:"Love the Work",desc:"Premium archive of award-winning campaigns",url:"https://www.lovethework.com/en/the-work",cat:["campaign"],domain:"lovethework.com"},
+  {name:"D&AD",desc:"Award-winning design and advertising work",url:"https://www.dandad.org/work",cat:["campaign"],domain:"dandad.org"},
+  {name:"The One Club",desc:"Showcase of top creative and advertising work",url:"https://www.oneclub.org/theoneshow/showcase",cat:["campaign"],domain:"oneclub.org"},
+
+  // VISUAL INSPO
+  {name:"Pinterest",desc:"Aesthetic direction, moodboards & references",url:"https://www.pinterest.com/",cat:["visual-inspo"],domain:"pinterest.com"},
+  {name:"Cosmos",desc:"Think Pinterest, but higher taste",url:"https://www.cosmos.so/",cat:["visual-inspo"],domain:"cosmos.so",isNew:true},
+
+  // STOCK & ASSETS
+  {name:"Unsplash",desc:"Free high-res photography",url:"https://unsplash.com",cat:["stock"],domain:"unsplash.com"},
+  {name:"Pexels",desc:"Free stock photos & video",url:"https://www.pexels.com",cat:["stock"],domain:"pexels.com"},
+  {name:"Freepik",desc:"Generative AI and stock image platform",url:"https://www.freepik.com/app",cat:["stock","ai"],domain:"freepik.com"},
+  {name:"Envato",desc:"Digital asset marketplace for creative resources",url:"https://app.envato.com/",cat:["stock"],domain:"envato.com"},
+
+  // ICONS
+  {name:"Google Icons",desc:"Open-source icon system with multiple weights",url:"https://fonts.google.com/icons",cat:["icons"],domain:"fonts.google.com"},
+  {name:"Phosphor Icons",desc:"Flexible open-source icon system",url:"https://phosphoricons.com/",cat:["icons"],domain:"phosphoricons.com"},
+
+  // MOCKUPS
+  {name:"Minimal Mockups",desc:"Free high-quality design mockups",url:"https://www.minimalmockups.com/",cat:["mockups"],domain:"minimalmockups.com"},
+  {name:"Unblast",desc:"Free high-quality design mockups",url:"https://unblast.com/",cat:["mockups"],domain:"unblast.com"},
+  {name:"Mockups Design",desc:"Free high-quality design mockups",url:"https://mockups-design.com/",cat:["mockups"],domain:"mockups-design.com"},
+  {name:"Mockup Maison",desc:"Premium curated mockup collection",url:"https://mockup.maison/",cat:["mockups"],domain:"mockup.maison"},
+  {name:"Bendito Mockups",desc:"Premium mockups — sometimes free",url:"https://benditomockup.com/",cat:["mockups"],domain:"benditomockup.com",isNew:true},
+  {name:"Smarty Mockups",desc:"Premium packaging mockups",url:"https://smartymockups.com/",cat:["mockups"],domain:"smartymockups.com"},
+
+  // AI
+  {name:"Claude",desc:"AI assistant developed by Anthropic",url:"https://claude.ai/",cat:["ai"],domain:"claude.ai"},
+  {name:"ChatGPT",desc:"AI chatbot developed by OpenAI",url:"https://chatgpt.com/",cat:["ai"],domain:"chatgpt.com"},
+  {name:"Midjourney",desc:"Generative AI model for images",url:"https://www.midjourney.com/home",cat:["ai"],domain:"midjourney.com"},
+  {name:"Gemini",desc:"Google's generative AI model",url:"https://gemini.google.com/",cat:["ai"],domain:"gemini.google.com"},
+  {name:"Elevenlabs",desc:"AI voice and audio generation platform",url:"https://elevenlabs.io/",cat:["ai"],domain:"elevenlabs.io"},
+
+  // EXTENSIONS
+  {name:"Fonts Ninja Ext",desc:"Identify any font from any website instantly",url:"https://chromewebstore.google.com/detail/fonts-ninja/eljapbgkmlngdpckoiiibecpemleclhh",cat:["extensions"],domain:"fonts.ninja"},
+  {name:"Muzli",desc:"Design inspiration hub as your new tab",url:"https://muz.li/",cat:["extensions"],domain:"muz.li",isFav:true},
+  {name:"Claude Extension",desc:"Claude AI directly in your browser",url:"https://chromewebstore.google.com/publisher/anthropic/u308d63ea0533efcf7ba778ad42da7390",cat:["extensions"],domain:"claude.ai"},
+
+  // EMAIL INSPO
+  {name:"Really Good Emails",desc:"Email design inspiration featuring real campaigns",url:"https://reallygoodemails.com/",cat:["email"],domain:"reallygoodemails.com"},
+  {name:"Email Love",desc:"Curated email design inspiration",url:"https://emaillove.com/",cat:["email"],domain:"emaillove.com"},
+
+  // PRESENTATION
+  {name:"Deck Gallery",desc:"Curated collection of beautiful presentation decks",url:"https://www.deck.gallery/",cat:["presentation"],domain:"deck.gallery"},
+
+  // UTILITIES
+  {name:"Ninja Units",desc:"Unit conversion tool for design measurements",url:"https://www.ninjaunits.com/",cat:["utilities"],domain:"ninjaunits.com",isFav:true},
+];
+
+function getFavicon(d){return`https://www.google.com/s2/favicons?domain=${d}&sz=64`}
+
+function buildGrid(){
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  resources.forEach((r,i)=>{
+    const a=document.createElement('a');
+    a.className='tile';
+    a.dataset.categories=JSON.stringify(r.cat);
+    a.href=r.url;
+    a.target='_blank';
+    a.rel='noopener noreferrer';
+    const initials=r.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const num=String(i+1).padStart(2,'0');
+    const catLabel=r.cat[0].replace(/-/g,' ').replace(/\//g,' / ');
+    const newBadge=r.isNew?`<span class="tile-new">New</span>`:'';
+    const favBadge=r.isFav?(()=>{
+      const cx=50,cy=50,outerR=46,innerR=38,pts=16;
+      let d='';
+      for(let i=0;i<pts*2;i++){
+        const angle=(Math.PI/pts)*i - Math.PI/2;
+        const r=i%2===0?outerR:innerR;
+        const x=cx+r*Math.cos(angle);
+        const y=cy+r*Math.sin(angle);
+        d+=(i===0?'M':'L')+x.toFixed(2)+','+y.toFixed(2);
+      }
+      d+='Z';
+      return `<span class="tile-fav"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="#1a1a1a" stroke-width="3" d="${d}"/><text x="50" y="50" text-anchor="middle" dominant-baseline="central" fill="#1a1a1a" font-family="DM Mono,monospace" font-size="22" font-weight="500" letter-spacing="1">FAV</text></svg></span>`;
+    })():'';    a.innerHTML=`
+      <div class="tile-top">
+        <div class="tile-top-left">
+          <img class="tile-logo" src="${getFavicon(r.domain)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="tile-logo-fallback">${initials}</div>
+          <span class="tile-num">${num}</span>
+        </div>
+      </div>
+      <div class="tile-bottom">
+        <div class="tile-category">${catLabel}</div>
+        <div class="tile-name">${r.name}${newBadge}${favBadge}</div>
+        <div class="tile-desc">${r.desc}</div>
+      </div>
+      <div class="tile-arrow"><svg viewBox="0 0 10 10"><line x1="2" y1="8" x2="8" y2="2"/><polyline points="4 2 8 2 8 6"/></svg></div>
+    `;
+    grid.appendChild(a);
+  });
+}
+
+let currentFilter='all';
+function setFilter(cat,btn){
+  currentFilter=cat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterTiles();
+}
+function filterTiles(){
+  const q=document.getElementById('search').value.toLowerCase();
+  let visible=0;
+  document.querySelectorAll('.tile').forEach(t=>{
+    const cats=JSON.parse(t.dataset.categories||'[]');
+    const catMatch=currentFilter==='all'||cats.includes(currentFilter);
+    const searchMatch=!q||t.textContent.toLowerCase().includes(q);
+    if(catMatch&&searchMatch){t.style.display='flex';visible++;}
+    else t.style.display='none';
+  });
+  document.getElementById('count').textContent=visible+' resources';
+  const grid=document.getElementById('grid');
+  let empty=grid.querySelector('.empty');
+  if(visible===0){if(!empty){const d=document.createElement('div');d.className='empty';d.textContent='No resources found.';grid.appendChild(d);}}
+  else if(empty)empty.remove();
+}
+
+/* LIVE CLOCK */
+function updateClock(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const s=String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent=h+':'+m+':'+s;
+}
+updateClock();
+setInterval(updateClock,1000);
+
+/* FEELING LUCKY / R KEY */
+function openRandom(){
+  const visible=Array.from(document.querySelectorAll('.tile')).filter(t=>t.style.display!=='none');
+  if(visible.length===0) return;
+  const random=visible[Math.floor(Math.random()*visible.length)];
+  random.style.outline='2px solid #1a1a1a';
+  setTimeout(()=>{random.style.outline='';window.open(random.href,'_blank');},200);
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='r'||e.key==='R'){
+    if(document.activeElement.tagName==='INPUT') return;
+    openRandom();
+  }
+  if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+});
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+/* PRELOADER */
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('preloader').classList.add('hidden');
+  },1800);
+});
+
+shuffle(resources);
+buildGrid();
+filterTiles();
+</script>
+</body>
+</html>

@@ -6,8 +6,9 @@
 <title>DEPOT.</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;cursor:crosshair}
 body{font-family:'DM Mono',monospace;background:#c0c0bc;min-height:100vh;color:#1a1a1a;display:flex;flex-direction:column}
+input{cursor:text !important}
 #page-wrap{flex:1;display:flex;flex-direction:column}
 
 /* HEADER */
@@ -36,9 +37,14 @@ body{font-family:'DM Mono',monospace;background:#c0c0bc;min-height:100vh;color:#
 
 /* FILTER BAR */
 .filter-bar{background:#c0c0bc;padding:0 2rem 1.5rem;display:flex;gap:6px;flex-wrap:wrap}
-.filter-btn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border:1px solid rgba(0,0,0,0.18);border-radius:2px;background:transparent;color:#777;cursor:pointer;transition:all .15s;white-space:nowrap}
+.filter-btn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border:1px solid rgba(0,0,0,0.18);border-radius:2px;background:transparent;color:#777;cursor:crosshair;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .filter-btn:hover{background:rgba(255,255,255,0.35);color:#1a1a1a;border-color:rgba(0,0,0,0.3)}
 .filter-btn.active{background:#1a1a1a;border-color:#1a1a1a;color:#c0c0bc}
+.filter-btn-new{border-color:#1a1a1a;color:#1a1a1a}
+.filter-btn-new.active{background:#1a1a1a;color:#f0f0ec}
+.filter-btn-fav{border-color:#555;color:#555}
+.filter-btn-fav.active{background:#555;color:#fff}
+.filter-count{font-size:8px;opacity:0.6}
 
 /* GRID */
 .grid-wrap{background:#c0c0bc;padding:3px;flex:1}
@@ -126,6 +132,8 @@ body{font-family:'DM Mono',monospace;background:#c0c0bc;min-height:100vh;color:#
 
 <div class="filter-bar" id="filter-bar">
   <button class="filter-btn active" onclick="setFilter('all',this)" data-cat="all">All</button>
+  <button class="filter-btn filter-btn-new" onclick="setFilter('new',this)" data-cat="new">New</button>
+  <button class="filter-btn filter-btn-fav" onclick="setFilter('fav',this)" data-cat="fav">Fav</button>
   <button class="filter-btn" onclick="setFilter('ui-ux',this)" data-cat="ui-ux">UI / UX</button>
   <button class="filter-btn" onclick="setFilter('typography',this)" data-cat="typography">Typography</button>
   <button class="filter-btn" onclick="setFilter('color',this)" data-cat="color">Color</button>
@@ -259,6 +267,8 @@ function buildGrid(){
     const a=document.createElement('a');
     a.className='tile';
     a.dataset.categories=JSON.stringify(r.cat);
+    a.dataset.isnew=r.isNew?'true':'false';
+    a.dataset.isfav=r.isFav?'true':'false';
     a.href=r.url;
     a.target='_blank';
     a.rel='noopener noreferrer';
@@ -310,6 +320,7 @@ function applyLang(){
     if(t.filters[cat]) btn.textContent=t.filters[cat];
   });
   buildGrid();
+  updateFilterCounts();
   filterTiles();
 }
 
@@ -318,6 +329,20 @@ function setLang(lang,btn){
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   applyLang();
+}
+
+function updateFilterCounts(){
+  document.querySelectorAll('.filter-btn').forEach(btn=>{
+    const cat=btn.dataset.cat;
+    let count=0;
+    if(cat==='all') count=resources.length;
+    else if(cat==='new') count=resources.filter(r=>r.isNew).length;
+    else if(cat==='fav') count=resources.filter(r=>r.isFav).length;
+    else count=resources.filter(r=>r.cat.includes(cat)).length;
+    const label=btn.dataset.label||btn.textContent.replace(/\s*\d+$/,'').trim();
+    btn.dataset.label=label;
+    btn.innerHTML=`${label} <span class="filter-count">${count}</span>`;
+  });
 }
 
 let currentFilter='all';
@@ -333,7 +358,13 @@ function filterTiles(){
   let visible=0;
   document.querySelectorAll('.tile').forEach(tile=>{
     const cats=JSON.parse(tile.dataset.categories||'[]');
-    const catMatch=currentFilter==='all'||cats.includes(currentFilter);
+    const isNew=tile.dataset.isnew==='true';
+    const isFav=tile.dataset.isfav==='true';
+    let catMatch=false;
+    if(currentFilter==='all') catMatch=true;
+    else if(currentFilter==='new') catMatch=isNew;
+    else if(currentFilter==='fav') catMatch=isFav;
+    else catMatch=cats.includes(currentFilter);
     const searchMatch=!q||tile.textContent.toLowerCase().includes(q);
     if(catMatch&&searchMatch){tile.style.display='flex';visible++;}
     else tile.style.display='none';
@@ -381,6 +412,7 @@ window.addEventListener('load',()=>{
 
 shuffle(resources);
 buildGrid();
+updateFilterCounts();
 filterTiles();
 </script>
 </body>

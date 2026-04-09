@@ -201,8 +201,8 @@ const resources=[
   {name:"Mobbin",desc:"Real app UI screenshot library",url:"https://mobbin.com/",cat:["ui-ux"],domain:"mobbin.com"},
   {name:"CTA Gallery",desc:"Curated gallery of call-to-actions",url:"https://www.cta.gallery/",cat:["ui-ux"],domain:"cta.gallery",isNew:true},
   {name:"Commerce Cream",desc:"Ecommerce experiences powered by Shopify",url:"https://commercecream.com/",cat:["ui-ux"],domain:"commercecream.com"},
-  {name:"Dribbble",desc:"Visual design shots & portfolios",url:"https://dribbble.com",cat:["ui-ux","visual-inspo"],domain:"dribbble.com"},
-  {name:"Behance",desc:"Full project case studies",url:"https://www.behance.net",cat:["ui-ux","visual-inspo"],domain:"behance.net"},
+  {name:"Dribbble",desc:"Visual design shots & portfolios",url:"https://dribbble.com",cat:["visual-inspo"],domain:"dribbble.com"},
+  {name:"Behance",desc:"Full project case studies",url:"https://www.behance.net",cat:["visual-inspo"],domain:"behance.net"},
 
   // TYPOGRAPHY
   {name:"Typewolf",desc:"Font recommendations & pairings in the wild",url:"https://www.typewolf.com",cat:["typography"],domain:"typewolf.com"},
@@ -306,7 +306,8 @@ function buildGrid(){
     a.rel='noopener noreferrer';
     const initials=r.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const num=String(i+1).padStart(2,'0');
-    const catLabel=r.cat[0].replace(/-/g,' ').replace(/\//g,' / ');
+    const catMap={'ui-ux':'UI / UX','typography':'Typography','color':'Color','blogs':'Blogs','campaign':'Campaign Inspo','visual-inspo':'Visual Inspo','stock':'Stock & Assets','icons':'Icons','mockups':'Mockups','ai':'AI','extensions':'Extensions','email':'Email Inspo','presentation':'Presentation','utilities':'Utilities'};
+    const catLabel=r.cat.map(c=>catMap[c]||c).map(c=>`<div class="tile-category">${c}</div>`).join('');
     const newBadge=r.isNew?`<span class="tile-new">New</span>`:'';
     const favBadge=r.isFav?(()=>{
       const cx=50,cy=50,outerR=46,innerR=38,pts=16;
@@ -329,7 +330,7 @@ function buildGrid(){
         </div>
       </div>
       <div class="tile-bottom">
-        <div class="tile-category">${catLabel}</div>
+        <div class="tile-cats" style="display:flex;gap:4px;flex-wrap:wrap">${catLabel}</div>
         <div class="tile-name">${r.name}${newBadge}${favBadge}</div>
         <div class="tile-desc">${r.desc}</div>
       </div>

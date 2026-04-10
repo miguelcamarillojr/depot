@@ -91,8 +91,8 @@ input{cursor:text !important}
 #preloader{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;gap:2rem;z-index:9999;transition:opacity .6s ease,visibility .6s ease}
 #preloader.hidden{opacity:0;visibility:hidden;pointer-events:none}
 .preloader-title{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#fff}
-.preloader-divider{width:1px;height:18px;background:rgba(255,255,255,0.2);flex-shrink:0}
-.preloader-sub{font-family:'DM Mono',monospace;font-size:9px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:#555}
+.preloader-divider{width:1px;height:18px;background:rgba(255,255,255,0.2);flex-shrink:0;opacity:0;transition:opacity .3s}
+.preloader-sub{font-family:'DM Mono',monospace;font-size:9px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:#555;opacity:0;transition:opacity .4s}
 
 /* FOOTER */
 .footer{background:#c0c0bc;padding:1.25rem 2rem;display:flex;justify-content:space-between;align-items:center}
@@ -103,7 +103,7 @@ input{cursor:text !important}
 <body>
 
 <div id="preloader">
-  <span class="preloader-title">DEPOT.</span>
+  <span class="preloader-title" id="preloader-title">DEPOT.</span>
   <div class="preloader-divider"></div>
   <span class="preloader-sub" id="preloader-sub">Where good design resources live.</span>
 </div>
@@ -147,6 +147,7 @@ input{cursor:text !important}
   <button class="filter-btn" onclick="setFilter('extensions',this)" data-cat="extensions">Extensions</button>
   <button class="filter-btn" onclick="setFilter('email',this)" data-cat="email">Email Inspo</button>
   <button class="filter-btn" onclick="setFilter('presentation',this)" data-cat="presentation">Presentation</button>
+  <button class="filter-btn" onclick="setFilter('ppc',this)" data-cat="ppc">PPC / Social Ads</button>
   <button class="filter-btn" onclick="setFilter('utilities',this)" data-cat="utilities">Utilities</button>
 </div>
 
@@ -168,8 +169,8 @@ const translations={
     footer:'Curated by someone with too many tabs open.',
     preloader:'Where good design resources live.',
     empty:'No resources found.',
-    filters:{all:'All','ui-ux':'UI / UX',typography:'Typography',color:'Color',blogs:'Blogs',campaign:'Campaign Inspo','visual-inspo':'Visual Inspo',stock:'Stock & Assets',icons:'Icons',mockups:'Mockups',ai:'AI',extensions:'Extensions',email:'Email Inspo',presentation:'Presentation',utilities:'Utilities'},
-    cats:{'ui-ux':'UI / UX',typography:'Typography',color:'Color',blogs:'Blogs',campaign:'Campaign Inspo','visual-inspo':'Visual Inspo',stock:'Stock & Assets',icons:'Icons',mockups:'Mockups',ai:'AI',extensions:'Extensions',email:'Email Inspo',presentation:'Presentation',utilities:'Utilities'},
+    filters:{all:'All','ui-ux':'UI / UX',typography:'Typography',color:'Color',blogs:'Blogs',campaign:'Campaign Inspo','visual-inspo':'Visual Inspo',stock:'Stock & Assets',icons:'Icons',mockups:'Mockups',ai:'AI',extensions:'Extensions',email:'Email Inspo',presentation:'Presentation',utilities:'Utilities',ppc:'PPC / Social Ads'},
+    cats:{'ui-ux':'UI / UX',typography:'Typography',color:'Color',blogs:'Blogs',campaign:'Campaign Inspo','visual-inspo':'Visual Inspo',stock:'Stock & Assets',icons:'Icons',mockups:'Mockups',ai:'AI',extensions:'Extensions',email:'Email Inspo',presentation:'Presentation',utilities:'Utilities',ppc:'PPC / Social Ads'},
   },
   es:{
     sub:'Donde viven los mejores recursos de diseño.',
@@ -177,8 +178,8 @@ const translations={
     footer:'Seleccionado por alguien con demasiadas pestañas abiertas.',
     preloader:'Donde viven los mejores recursos de diseño.',
     empty:'No se encontraron recursos.',
-    filters:{all:'Todo',new:'Nuevo',fav:'Fav','ui-ux':'UI / UX',typography:'Tipografía',color:'Color',blogs:'Blogs',campaign:'Inspo de Campaña','visual-inspo':'Inspo Visual',stock:'Recursos',icons:'Iconos',mockups:'Mockups',ai:'AI',extensions:'Extensiones',email:'Inspo de Email',presentation:'Presentación',utilities:'Utilidades'},
-    cats:{'ui-ux':'UI / UX',typography:'Tipografía',color:'Color',blogs:'Blogs',campaign:'Inspo de Campaña','visual-inspo':'Inspo Visual',stock:'Recursos',icons:'Iconos',mockups:'Mockups',ai:'AI',extensions:'Extensiones',email:'Inspo de Email',presentation:'Presentación',utilities:'Utilidades'},
+    filters:{all:'Todo',new:'Nuevo',fav:'Fav','ui-ux':'UI / UX',typography:'Tipografía',color:'Color',blogs:'Blogs',campaign:'Inspo de Campaña','visual-inspo':'Inspo Visual',stock:'Recursos',icons:'Iconos',mockups:'Mockups',ai:'AI',extensions:'Extensiones',email:'Inspo de Email',presentation:'Presentación',utilities:'Utilidades',ppc:'PPC / Ads Sociales'},
+    cats:{'ui-ux':'UI / UX',typography:'Tipografía',color:'Color',blogs:'Blogs',campaign:'Inspo de Campaña','visual-inspo':'Inspo Visual',stock:'Recursos',icons:'Iconos',mockups:'Mockups',ai:'AI',extensions:'Extensiones',email:'Inspo de Email',presentation:'Presentación',utilities:'Utilidades',ppc:'PPC / Ads Sociales'},
   }
 };
 
@@ -253,6 +254,10 @@ const resources=[
   {name:"Email Love",desc:{en:"Curated email design inspiration",es:"Inspiración curada de diseño de emails"},url:"https://emaillove.com/",cat:["email"],domain:"emaillove.com"},
   {name:"Deck Gallery",desc:{en:"Curated collection of beautiful presentation decks",es:"Colección curada de presentaciones hermosas"},url:"https://www.deck.gallery/",cat:["presentation"],domain:"deck.gallery"},
   {name:"Ninja Units",desc:{en:"Unit conversion tool for design measurements",es:"Herramienta de conversión de unidades para medidas de diseño"},url:"https://www.ninjaunits.com/",cat:["utilities"],domain:"ninjaunits.com",isFav:true},
+  {name:"Magier",desc:{en:"PPC and social ad inspiration library",es:"Biblioteca de inspiración para anuncios PPC y sociales"},url:"https://www.magier.com/ad-examples",cat:["ppc"],domain:"magier.com"},
+  {name:"Meta Ads Library",desc:{en:"Database of live Facebook and Instagram ads",es:"Base de datos de anuncios activos de Facebook e Instagram"},url:"https://www.facebook.com/ads/library",cat:["ppc"],domain:"facebook.com"},
+  {name:"Adfolio",desc:{en:"Curated paid social ad inspiration",es:"Inspiración curada de anuncios sociales pagados"},url:"https://www.adfolio.design/",cat:["ppc"],domain:"adfolio.design"},
+  {name:"TikTok Top Ads",desc:{en:"Trending TikTok ad creatives and insights",es:"Creatividades e insights de anuncios trending en TikTok"},url:"https://ads.tiktok.com/business/creativecenter/inspiration/topads",cat:["ppc"],domain:"tiktok.com"},
 ];
 
 let currentLang='en';
@@ -300,7 +305,7 @@ function buildGrid(){
       </div>
       <div class="tile-bottom">
         <div class="tile-cats" style="display:flex;gap:4px;flex-wrap:wrap">${catLabel}</div>
-        <div class="tile-name">${r.name}${newBadge}${favBadge}</div>
+        <div class="tile-name" data-finalname="${r.name}">${r.name}${newBadge}${favBadge}</div>
         <div class="tile-desc">${desc}</div>
       </div>
       <div class="tile-arrow"><svg viewBox="0 0 10 10"><line x1="2" y1="8" x2="8" y2="2"/><polyline points="4 2 8 2 8 6"/></svg></div>
@@ -405,15 +410,66 @@ function shuffle(arr){
   return arr;
 }
 
-/* PRELOADER */
+/* PRELOADER DECODE ANIMATION */
+const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&';
+function scramble(el,finalText,duration){
+  const len=finalText.length;
+  const startTime=performance.now();
+  const revealed=Array(len).fill(false);
+  function frame(now){
+    const elapsed=now-startTime;
+    const progress=Math.min(elapsed/duration,1);
+    const numRevealed=Math.floor(progress*len);
+    for(let i=0;i<numRevealed;i++) revealed[i]=true;
+    let display='';
+    for(let i=0;i<len;i++){
+      if(finalText[i]===' '){display+=' ';}
+      else if(revealed[i]){display+=finalText[i];}
+      else{display+=chars[Math.floor(Math.random()*chars.length)];}
+    }
+    el.textContent=display;
+    if(progress<1) requestAnimationFrame(frame);
+    else el.textContent=finalText;
+  }
+  requestAnimationFrame(frame);
+}
+
 window.addEventListener('load',()=>{
-  setTimeout(()=>{document.getElementById('preloader').classList.add('hidden');},1800);
+  const titleEl=document.getElementById('preloader-title');
+  const subEl=document.getElementById('preloader-sub');
+  const divEl=document.querySelector('.preloader-divider');
+  titleEl.textContent='';
+  setTimeout(()=>{
+    scramble(titleEl,'DEPOT.',900);
+  },200);
+  setTimeout(()=>{
+    divEl.style.opacity='1';
+    subEl.style.opacity='1';
+  },900);
+  setTimeout(()=>{
+    document.getElementById('preloader').classList.add('hidden');
+  },2400);
 });
 
 shuffle(resources);
 buildGrid();
 updateFilterCounts();
 filterTiles();
+
+/* DECODE ALL TILE NAMES ON LOAD */
+setTimeout(()=>{
+  document.querySelectorAll('.tile-name').forEach(el=>{
+    const finalName=el.dataset.finalname||el.textContent.trim();
+    const badges=el.querySelectorAll('.tile-new,.tile-fav');
+    const badgeHTML=Array.from(badges).map(b=>b.outerHTML).join('');
+    scramble({
+      textContent:'',
+      set textContent(v){
+        el.innerHTML=v+badgeHTML;
+      }
+    },finalName,800);
+  });
+},2500);
 </script>
 </body>
 </html>
